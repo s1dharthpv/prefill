@@ -21,6 +21,18 @@ bench --site $YOUR_SITE install-app prefill
 
 **Save a preset.** Fill a form, then Menu > Save as Preset. Give it a title, choose who can use it (scope), and tick the fields and child tables to keep. Fields that have a value are ticked for you. Only ticked values are saved.
 
+**Dynamic values.** Under "Dynamic values (optional)" in the same dialog, pick a field and a value that is worked out each time the preset is applied, instead of saving a fixed one. It replaces the saved value of that field, ticked or not. Each value only appears for the fields it fits:
+
+| Value | Fits | Notes |
+|---|---|---|
+| Today | Date, Datetime | optional "days from today", positive or negative, up to 3650. On a Datetime field it fills midnight |
+| Now | Datetime | |
+| First day of this month, Last day of this month | Date | |
+| Current user | Data, or a Link to User | |
+| Default company | a Link to Company | filled only if the user has a default company; skipped with a reason otherwise |
+
+Dynamic values work on the fields of the form itself, not on child table rows.
+
 **Apply a preset.** On a new or draft form, click Presets > Apply a Preset and pick one. A preview opens:
 
 - one row per field, with the current value, the preset value and a checkbox
@@ -67,7 +79,7 @@ Form Presets Settings (System Manager only):
 - Desk only. There is no portal or website form support, and no mobile app.
 - Presets fill new and draft documents only. Submitted and cancelled documents are refused by the server, not just hidden in the interface.
 - A preset keeps plain values. It does not run expressions or templates.
-- Dynamic values (`today` with an optional day offset, `now`, `month_start`, `month_end`, `me`, `default_company`) are stored, checked against the field type and resolved on the server when a preset is applied. The Save dialog does not create them yet.
+- Dynamic values are resolved on the server in the site's time zone when a preset is applied, and checked against the field type when it is saved. They are not offered for child table rows.
 - A Link field is filled only if the linked record still exists and you may read it. A Select is filled only if the option still exists.
 
 ## Data handling

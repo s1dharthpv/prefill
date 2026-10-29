@@ -71,6 +71,11 @@ class TestApi(IntegrationTestCase):
 		for system in ("name", "owner", "creation", "modified", "docstatus", "idx", "amended_from"):
 			self.assertNotIn(system, names)
 
+		by_name = {field["fieldname"]: field for field in result["fields"]}
+		self.assertEqual(by_name["owner_user"]["options"], "User")
+		self.assertEqual(by_name["ref_type"]["options"], "DocType")
+		self.assertNotIn("options", by_name["title"])  # only a Link needs to say what it points at
+
 		tables = {table["fieldname"]: table for table in result["tables"]}
 		self.assertEqual(set(tables), {"items"})
 		self.assertEqual(tables["items"]["child_doctype"], CHILD)

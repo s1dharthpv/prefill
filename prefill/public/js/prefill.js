@@ -22,6 +22,39 @@ Object.assign(prefill, {
 	// New forms carry 0 for these, so a 0 does not count as "filled in".
 	ZERO_IS_DEFAULT: ["Int", "Float", "Currency", "Percent", "Check"],
 
+	// Dynamic values: worked out on the server each time a preset is applied. `fits` mirrors
+	// TOKEN_FITS in fields.py, which is what actually enforces it when the preset is saved.
+	DYNAMIC_VALUES: [
+		{
+			value: "today",
+			label: __("Today"),
+			days: true,
+			fits: (df) => ["Date", "Datetime"].includes(df.fieldtype),
+		},
+		{ value: "now", label: __("Now"), fits: (df) => df.fieldtype === "Datetime" },
+		{
+			value: "month_start",
+			label: __("First day of this month"),
+			fits: (df) => df.fieldtype === "Date",
+		},
+		{
+			value: "month_end",
+			label: __("Last day of this month"),
+			fits: (df) => df.fieldtype === "Date",
+		},
+		{
+			value: "me",
+			label: __("Current user"),
+			fits: (df) =>
+				df.fieldtype === "Data" || (df.fieldtype === "Link" && df.options === "User"),
+		},
+		{
+			value: "default_company",
+			label: __("Default company"),
+			fits: (df) => df.fieldtype === "Link" && df.options === "Company",
+		},
+	],
+
 	is_available(frm) {
 		const boot = frappe.boot.form_presets;
 		const meta = frm.meta || {};
@@ -69,6 +102,25 @@ Object.assign(prefill, {
 			value: table.fieldname,
 			checked: (frm.doc[table.fieldname] || []).length > 0,
 		}));
+
+		// The grid shows the stored value of a Select, so the options are the visible labels and
+		// these maps turn a chosen label back into a fieldname or a dynamic value.
+		const dynamic_fields = capturable.fields.filter((df) =>
+			prefill.DYNAMIC_VALUES.some((token) => token.fits(df))
+		);
+		const label_counts = {};
+		dynamic_fields.forEach((df) => {
+			label_counts[__(df.label)] = (label_counts[__(df.label)] || 0) + 1;
+		});
+		const field_by_label = {};
+		dynamic_fields.forEach((df) => {
+			const label = __(df.label);
+			field_by_label[label_counts[label] > 1 ? `${label} (${df.fieldname})` : label] =
+				df.fieldname;
+		});
+		const token_by_label = Object.fromEntries(
+			prefill.DYNAMIC_VALUES.map((token) => [token.label, token.value])
+		);
 
 		const scopes = frappe.boot.form_presets.allow_everyone
 			? "Private\nShared\nEveryone"
@@ -152,6 +204,51 @@ Object.assign(prefill, {
 			});
 		}
 
+		if (dynamic_fields.length) {
+			fields.push(
+				{ fieldtype: "Section Break", label: __("Dynamic values (optional)") },
+				{
+					fieldname: "dynamic_hint",
+					fieldtype: "HTML",
+					options: `<p class="text-muted">${__(
+						"Instead of a fixed value, fill a field with a value worked out each time the preset is applied, such as a date 30 days from today. It replaces the saved value of that field."
+					)}</p>`,
+				},
+				{
+					fieldname: "dynamic_values",
+					fieldtype: "Table",
+					label: __("Dynamic values"),
+					cannot_add_rows: false,
+					in_place_edit: true,
+					data: [],
+					fields: [
+						{
+							fieldname: "field",
+							fieldtype: "Select",
+							label: __("Field"),
+							options: Object.keys(field_by_label).join("\n"),
+							in_list_view: 1,
+							reqd: 1,
+						},
+						{
+							fieldname: "token",
+							fieldtype: "Select",
+							label: __("Value"),
+							options: Object.keys(token_by_label).join("\n"),
+							in_list_view: 1,
+							reqd: 1,
+						},
+						{
+							fieldname: "days",
+							fieldtype: "Int",
+							label: __("Days from today"),
+							in_list_view: 1,
+						},
+					],
+				}
+			);
+		}
+
 		const dialog = new frappe.ui.Dialog({
 			title: __("Save as Preset"),
 			fields,
@@ -164,6 +261,12 @@ Object.assign(prefill, {
 					values.picked_fields || [],
 					values.picked_tables || []
 				);
+				const dynamic_rows = (values.dynamic_values || []).map((row) => ({
+					field: field_by_label[row.field],
+					token: token_by_label[row.token],
+					days: row.days,
+				}));
+				prefill.apply_dynamic(capturable, dynamic_rows, saved);
 				if (!Object.keys(saved.fields).length && !Object.keys(saved.tables).length) {
 					frappe.msgprint(
 						__("Tick at least one field or child table that has a value.")
@@ -217,6 +320,45 @@ Object.assign(prefill, {
 			});
 
 		return saved;
+	},
+
+	// A dynamic row replaces the fixed value of its field, ticked or not.
+	apply_dynamic(capturable, rows, saved) {
+		const by_name = Object.fromEntries(capturable.fields.map((df) => [df.fieldname, df]));
+		const seen = new Set();
+
+		rows.filter((row) => row.field || row.token).forEach((row) => {
+			const df = by_name[row.field];
+			const token = prefill.DYNAMIC_VALUES.find(
+				(candidate) => candidate.value === row.token
+			);
+			if (!df || !token) {
+				frappe.throw(__("Dynamic values: choose a field and a value in every row."));
+			}
+			if (seen.has(row.field)) {
+				frappe.throw(__("Dynamic values: {0} is listed twice.", [__(df.label)]));
+			}
+			seen.add(row.field);
+
+			if (!token.fits(df)) {
+				frappe.throw(
+					__("{0} cannot be filled with {1}.", [__(df.label), `"${token.label}"`])
+				);
+			}
+
+			const value = { $dyn: token.value };
+			const days = cint(row.days);
+			if (days) {
+				if (!token.days) {
+					frappe.throw(__("Dynamic values: only Today can use a number of days."));
+				}
+				if (Math.abs(days) > 3650) {
+					frappe.throw(__("Dynamic values: days must be between -3650 and 3650."));
+				}
+				value.days = days;
+			}
+			saved.fields[row.field] = value;
+		});
 	},
 
 	// ---- Apply a preset ----

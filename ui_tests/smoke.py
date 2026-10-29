@@ -16,6 +16,7 @@ The password is read from PREFILL_UI_PASSWORD and never has a default.
 import argparse
 import os
 import sys
+from datetime import date, timedelta
 
 from playwright.sync_api import sync_playwright
 
@@ -112,6 +113,22 @@ def run(page, base: str, pause):
 	check("flag" not in picked, "an unchecked Check must not be pre-ticked")
 	check(tables == ["items"], f"expected the filled child table pre-ticked, got {tables}")
 	pause()
+
+	step("make Due Date dynamic: today plus 7 days")
+	modal = page.locator(".modal.show")
+	if (
+		modal.locator("[data-fieldname='dynamic_values'] .grid-row").count() < 2
+	):  # the grid starts with a blank row
+		modal.locator("[data-fieldname='dynamic_values'] .grid-add-row").click()
+	row = modal.locator("[data-fieldname='dynamic_values'] .grid-row").nth(1)  # nth(0) is the header
+	row.locator(".col[data-fieldname='field']").click()
+	row.locator(".col[data-fieldname='field'] select").select_option("Due Date")
+	row.locator(".col[data-fieldname='token']").click()
+	row.locator(".col[data-fieldname='token'] select").select_option("Today")
+	row.locator(".col[data-fieldname='days']").click()
+	row.locator(".col[data-fieldname='days'] input").fill("7")
+	page.locator(".modal.show .modal-title").click()  # Tab in a last cell would add a row
+	pause()
 	page.fill(".modal.show input[data-fieldname='title']", TITLE)
 	page.press(".modal.show input[data-fieldname='title']", "Tab")
 	page.locator(".modal.show").get_by_role("button", name="Save").click()
@@ -122,6 +139,15 @@ def run(page, base: str, pause):
 	saved_as = [p["name"] for p in presets if p["title"] == TITLE]
 	check(len(saved_as) == 1, f"preset was not saved: {presets}")
 	preset = saved_as[0]
+	stored = call(
+		page,
+		"frappe.client.get_value",
+		doctype="Form Preset",
+		filters={"name": preset},
+		fieldname="values_json",
+	)["values_json"]
+	check('"$dyn":"today"' in stored and '"days":7' in stored, f"dynamic value was not stored: {stored}")
+	check("2026-11-15" not in stored, "the fixed Due Date must be replaced by the dynamic value")
 
 	try:
 		step("reload to a new form that already has a typed title and one old row")
@@ -172,6 +198,9 @@ def run(page, base: str, pause):
 		)
 		check(form["title"] == "Weekly invoice" and form["qty"] == 5, f"values not applied: {form}")
 		check(form["items"] == ["SKU-1", "SKU-2"], f"rows not replaced: {form}")
+		week_out = date.today() + timedelta(days=7)
+		allowed = {str(week_out + timedelta(days=d)) for d in (-1, 0, 1)}  # tolerate a timezone edge
+		check(form["due"] in allowed, f"dynamic Due Date should be about {week_out}: {form}")
 		check(form["dirty"] and form["local"], f"applying must leave the form unsaved: {form}")
 		pause()
 

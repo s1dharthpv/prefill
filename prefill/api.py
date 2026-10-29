@@ -155,7 +155,10 @@ def _parse_json(raw: str, label: str):
 
 
 def _describe(df) -> dict:
-	return {"fieldname": df.fieldname, "label": df.label or df.fieldname, "fieldtype": df.fieldtype}
+	described = {"fieldname": df.fieldname, "label": df.label or df.fieldname, "fieldtype": df.fieldtype}
+	if df.fieldtype == "Link":
+		described["options"] = df.options  # which dynamic values fit a Link depends on its target
+	return described
 
 
 def _usable(doctype: str) -> bool:

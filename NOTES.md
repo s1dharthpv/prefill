@@ -84,7 +84,7 @@ Bugs the browser found that the server tests could not:
 - Pre-tick offered an unchecked Check as "filled" (the client numeric list does not include Check).
 - Select controls fire `change` during dialog construction with no value, which sent an empty mode and the server answered "Unknown mode". Changes are now ignored until the first diff has loaded.
 
-Not built, needs a decision: there is no UI to put a dynamic value (`today`, `me`, ...) into a preset. The server stores, types and resolves them (steps 2 and 3, tested), but a user can only create one through the API. Options: a small "Make dynamic" choice next to eligible fields in the Save dialog, or leave it API-only for v0.1.
+Dynamic values UI: built after this step, see the Dynamic values section below.
 
 Gates: ESLint and Prettier pass (the repo `.eslintrc` now declares the `prefill` global), ruff, Semgrep 0 findings, 66 server tests.
 
@@ -111,6 +111,17 @@ Open items that only the owner can fill:
 ## Environment note
 
 `playwright install ffmpeg` (run from my scratch environment, Playwright 1.64) pruned Chromium 1243 from `~/.cache/ms-playwright`, which another session's Playwright 1.63 environment uses. Restored by running that environment's own `playwright install chromium chromium-headless-shell`. Do not run `playwright install` again; point scripts at a cached build with `executable_path` instead.
+
+## Dynamic values UI
+
+The Save dialog has a "Dynamic values (optional)" grid: Field, Value, Days from today. The server side was already there (steps 2 and 3).
+- A dynamic row replaces the fixed value of its field, ticked or not. Only fields some value fits are offered. The fit rules are duplicated in JS (`prefill.DYNAMIC_VALUES`) from `TOKEN_FITS` in `fields.py`, which is what enforces them on save, so a drift shows as a server error, not as bad data.
+- `get_capturable_fields` now returns `options` for Link fields, because "Current user" and "Default company" depend on what a Link points at.
+- The grid shows the stored value of a Select, so the options are the visible labels and the dialog maps a label back to a fieldname or value. A duplicate field label gets its fieldname appended.
+- Client checks, each with a message: a value on a field it does not fit, a field listed twice, a half-filled row, days on anything but Today, days outside plus or minus 3650. Fully empty rows are ignored.
+- Not offered for child table rows (the server supports them). The grid starts with one blank row, and Tab in the last cell of a Frappe grid adds a row, which is stock grid behaviour.
+- Checked in a browser: saved `due_date` as `{"$dyn":"today","days":7}`; applying on 2026-10-29 filled 2026-11-05. `ui_tests/smoke.py` now covers it (tolerates one day either way around midnight).
+- Listing: new feature bullet, new screenshot `03-dynamic-values.png`, demo video re-recorded (63 seconds) with dynamic dates.
 
 ## Independent review (2026-10-29) and fixes
 
