@@ -115,6 +115,12 @@ A browser smoke test of the whole save and apply flow lives in `ui_tests/smoke.p
 
 CI: server tests run on every push to `develop`; linters run on every pull request.
 
+## Support, privacy and terms
+
+- [Support](docs/SUPPORT.md)
+- [Privacy policy](docs/PRIVACY.md)
+- [Terms of use](docs/TERMS.md)
+
 ## License
 
 MIT. See `LICENSE`.
