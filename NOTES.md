@@ -65,7 +65,7 @@ Decisions and differences:
 - Consequence to know about: a Link to DocType needs read on that DocType record, which ordinary users do not have, so a Dynamic Link pair keyed on a DocType field is skipped for them. This is the SPEC rule applied as written.
 - Rows in a table with no fillable cell are left out and a warning is returned.
 - Controller order: target-DocType permission is checked before the values, so a user with no access gets a permission error, not a "field cannot be saved" one.
-- `default_company` is only tested with mocks: it needs the Company DocType, which this site does not have (no ERPNext). Saving it on a Link to Company cannot be tested here either; the typing rule (Link with options Company) is in `fields.TOKEN_FITS`.
+- `default_company` is only tested with mocks: it needs the Company DocType, which this site does not have (a bare Frappe site). Saving it on a Link to Company cannot be tested here either; the typing rule (Link with options Company) is in `fields.TOKEN_FITS`.
 - Test DocTypes (`Prefill Test Doc`, `Prefill Test Row`) are created at test time as custom DocTypes and dropped in a class cleanup. DDL commits, so the cleanup rolls back first. They never ship in the app.
 
 Tests: 66 pass. Gates: ruff, pre-commit, Semgrep 69 rules 0 findings (one finding on an ignored `has_permission` result was fixed).
@@ -97,6 +97,6 @@ Gates: ESLint and Prettier pass (the repo `.eslintrc` now declares the `prefill`
 ## Open questions
 
 - SPEC 12 Q2a: is a v16-only app accepted by the Compatibility audit and review.
-- SPEC 12 Q3: demand check with 3 to 5 ERPNext users.
+- SPEC 12 Q3: demand check with 3 to 5 target users.
 - Private repo (assignment) vs public GitHub (Marketplace): needs the owner's go-ahead before any public push.
 - `requires-python = ">=3.14"` in the scaffold matches Frappe v16 (`>=3.14,<3.15`); confirm Frappe Cloud v16 images use 3.14.
