@@ -110,7 +110,7 @@ Form Presets Settings (System Manager only):
 - Presets fill new and draft documents only. Submitted and cancelled documents are refused by the server, not just hidden in the interface.
 - A preset keeps plain values. It does not run expressions or templates.
 - Dynamic values are resolved on the server in the site's time zone when a preset is applied, and checked against the field type when it is saved. They are not offered for child table rows.
-- A Link field is filled only if the linked record still exists and you may read it. A Select is filled only if the option still exists.
+- A Link field is filled only if the linked record still exists and you may read it (for a Link to a DocType, such as a party type, you must be able to read documents of that DocType). A Select is filled only if the option still exists.
 
 ## Data handling
 

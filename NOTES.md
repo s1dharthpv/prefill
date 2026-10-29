@@ -44,7 +44,7 @@ Frappe v16 only. The app uses no `override_doctype_class`, no `override_whitelis
 - It refuses unless the form is new or a draft. The stored document decides: the server checks both the docstatus the client sent and the stored one. A stored draft needs write on it, a new form needs create on the target DocType.
 - `fill_empty` treats None, an empty string, and 0 on number and Check fields as empty, because a new form carries 0 for those. A value equal to the current one is reported as a skip, not a change.
 - A Link or Dynamic Link value is skipped if the record is missing or the user cannot read it (the Current user value is exempt). A Select value is skipped if the option is gone. A Dynamic Link is checked against the DocType the form will have after applying.
-- A Link to DocType needs read on that DocType record, which ordinary users lack. A Dynamic Link pair keyed on a DocType field is therefore skipped for them.
+- A Link to DocType names a DocType, so what is checked is whether the user can read documents of that DocType, not the DocType definition (which ordinary users cannot read). This is what lets a Payment Entry party type, and the party that depends on it, be filled by an ordinary Accounts user.
 - A child row with no fillable cell is left out and a warning is returned.
 - `record_use` counts with a query-builder update, so a user who may use a preset but not write it still counts a use, and `modified` does not move.
 
