@@ -49,7 +49,7 @@ bench --site $YOUR_SITE install-app prefill
 
 ## Using it
 
-**Save a preset.** Fill a form, then Menu > Save as Preset. Give it a title, choose who can use it (scope), and tick the fields and child tables to keep. Fields that have a value are ticked for you. Only ticked values are saved.
+**Save a preset.** Fill a form, then Menu > Save as Preset. Give it a title, choose who can use it (scope), and tick the fields and child tables to keep. Fields that have a value are ticked for you, including values the form filled in by itself, such as defaults and fields fetched from a customer. Untick what you do not want to repeat. Only ticked values are saved.
 
 **Dynamic values.** Under "Dynamic values (optional)" in the same dialog, pick a field and a value that is worked out each time the preset is applied, instead of saving a fixed one. It replaces the saved value of that field, ticked or not. Each value only appears for the fields it fits:
 
@@ -110,6 +110,8 @@ Form Presets Settings (System Manager only):
 - Presets fill new and draft documents only. Submitted and cancelled documents are refused by the server, not just hidden in the interface.
 - A preset keeps plain values. It does not run expressions or templates.
 - Dynamic values are resolved on the server in the site's time zone when a preset is applied, and checked against the field type when it is saved. They are not offered for child table rows.
+- Some forms add rows or defaults of their own, for example a new invoice with one blank item row and a default tax row. "Append rows" leaves those in place: the blank row stays and can block saving, and a default row can appear twice. Choose "Replace rows" for such tables.
+- A field that the form recalculates from other fields, such as an invoice's due date from its payment terms, is overwritten by that logic, exactly as a manual edit would be. A preset cannot hold a value for it.
 - A Link field is filled only if the linked record still exists and you may read it (for a Link to a DocType, such as a party type, you must be able to read documents of that DocType). A Select is filled only if the option still exists.
 
 ## Data handling

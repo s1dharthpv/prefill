@@ -65,6 +65,8 @@ Frappe v16 only. The app uses no `override_doctype_class`, no `override_whitelis
 
 ## Limits worth knowing
 
+- Checked on a real invoice form with the host application's own form scripts running (save a preset, apply it with Replace rows, save the invoice): the form saved through its own validations and the application computed totals and fetched values itself. Appending to a table the form pre-fills leaves its blank placeholder row and can duplicate a default row, so Replace rows is the mode for those. A field the form recalculates from others (an invoice due date) is overwritten by that logic.
+
 - Desk only; presets fill new and draft documents only.
 - Child tables are saved through their parent. Single, child table, virtual and core system DocTypes are excluded.
 - Dynamic values are not offered for child table rows in the dialog.
