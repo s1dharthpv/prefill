@@ -147,13 +147,18 @@ required_apps = []
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Form Preset": "prefill.permissions.get_permission_query_conditions",
+}
+
+has_permission = {
+	"Form Preset": "prefill.permissions.has_permission",
+}
+
+# Boot
+# ----
+
+boot_session = "prefill.boot.boot_session"
 
 # Document Events
 # ---------------

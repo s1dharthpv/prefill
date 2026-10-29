@@ -31,10 +31,30 @@ Local gates on the empty app:
 - `bench run-tests --app prefill`: runner works, 0 tests.
 - `app_name` equals package folder, no symlinks, `__init__.py` has no calls.
 
+## Step 2: DocTypes, hooks, permissions
+
+Built: Form Preset, Form Preset Share, Form Presets Settings, and the child table Form Preset Excluded DocType (SPEC 3.3 lists it; the assignment counts three DocTypes, this is the fourth). Hooks: `permission_query_conditions`, `has_permission`, `boot_session`. Shared logic: `prefill/exclusions.py`, `permissions.py`, `values.py`, `boot.py`.
+
+Differences from the SPEC, and decisions the SPEC left open:
+- The child field in Form Preset Excluded DocType is `excluded_doctype`, not `doctype` (SPEC 3.3). `doctype` is a reserved fieldname in Frappe.
+- Scope Everyone is only usable while `allow_everyone_scope` is on. Turning it off later makes existing Everyone presets invisible to others, not just blocked on save (assignment: "usable by all, but only if the setting allows it").
+- Shares only count while scope is Shared. Any share rows on a Private or Everyone preset are cleared on save.
+- `permission_query_conditions` and `has_permission` both require read on the target DocType for non-System Manager users, as the assignment says. The owner of a preset therefore stops seeing it if they lose read on its target. System Manager sees everything.
+- `has_permission` returns a real bool on every path: Frappe treats `None` from a controller hook as a denial.
+- `field_count` is the number of captured fields plus the number of non-empty captured tables.
+- Settings validation: `max_presets_per_user` must be 1 or more, `max_values_kb` must be 1 to 1024. There is no "0 means unlimited".
+- Deleting a preset: Frappe copies the whole document into Deleted Document after `after_delete`. The controller blanks `values_json` in `after_delete`, so the copy holds no values. A restored preset would come back with empty values.
+- Controller validation (not only `save_preset`) enforces scope rule, caps, unique title, excluded targets, create/write on the target, owner-only changes to scope/sharing/disabled, and the values shape. A direct REST or form save cannot bypass it.
+- `values.py` checks shape only (version, keys, scalars, token names, `days` range, reserved keys). Allowlist against the target DocType's fields and token-to-fieldtype typing are step 3, with `get_capturable_fields`.
+
+Tests: 32 pass on the dev site (permission matrix for owner, shared user, shared editor, role share, Everyone with the setting on and off, unrelated user, System Manager and Administrator; unreadable target; excluded targets; caps; Deleted Document scrub; values shape; boot flag).
+Gates: ruff check and format clean, pre-commit clean, Semgrep 69 rules 0 findings.
+
 ## Not done yet
 
 - GitHub CI (`ci.yml`, `linter.yml`) has not run: there is no remote. `linter.yml` only triggers on pull requests, so it needs a PR from `develop`. Creating the private remote needs the owner's go-ahead.
 - Fresh-site install from README only (done after the README exists).
+- `bench migrate` on a fresh v16 site and the CI run: not done for step 2 beyond the dev site.
 
 ## Open questions
 
