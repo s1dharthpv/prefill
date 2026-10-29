@@ -8,6 +8,8 @@ Example: you create the same customer's invoice every week. Fill it once, choose
 
 ## Screenshots
 
+[Watch the demo video](docs/demo/demo.mp4) (about one minute, no audio, with captions): save a preset with two dynamic dates, apply it, review the preview in both modes, and save.
+
 **Save a preset.** Fill a form, choose Menu > Save as Preset, and tick the fields and child tables to keep.
 
 ![The Save as Preset dialog with a title, scope, and checklists of fields and child tables](docs/images/save-as-preset.png)

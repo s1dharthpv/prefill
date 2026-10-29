@@ -16,6 +16,7 @@ How Prefill behaves and why. The [README](README.md) is the user guide; this fil
 | `prefill/exclusions.py`, `prefill/boot.py` | Excluded DocTypes, and the boot flag that tells the desk whether to show the UI |
 | `prefill/public/js/prefill.js` | Desk UI. Plain JS, no build step |
 | `ui_tests/smoke.py` | Browser smoke test of the whole flow (not part of `bench run-tests`) |
+| `docs/` | Support, privacy and terms pages, the screenshots in `docs/images/` and the demo video in `docs/demo/` |
 
 Frappe v16 only. The app uses no `override_doctype_class`, no `override_whitelisted_methods` and no wildcard `doc_events`, and declares no dependency other than Frappe.
 
