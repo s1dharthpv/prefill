@@ -57,7 +57,7 @@ bench --site $YOUR_SITE install-app prefill
 | Now | Datetime | |
 | First day of this month, Last day of this month | Date | |
 | Current user | Data, or a Link to User | |
-| Default company | a Link to Company | filled only if the user has a default company; skipped with a reason otherwise |
+| Default company | a Link to Company | the user's default company, else the site's default company; skipped with a reason if neither is set, or if the site has no Company DocType |
 
 Dynamic values work on the fields of the form itself, not on child table rows.
 
@@ -70,7 +70,7 @@ Dynamic values work on the fields of the form itself, not on child table rows.
 
 Nothing is written until you click Apply, and applying only changes the form on screen. You then save the form as usual, so every normal validation runs.
 
-**Scope.** Private (only you), Shared (chosen users and roles, each with an optional "can edit"), or Everyone (off until a System Manager allows it in Form Presets Settings; if it is turned off later, existing Everyone presets stay with their owner and System Managers and other users stop seeing them). Presets are also listed under Form Preset in the Prefill workspace.
+**Scope.** Private (only you), Shared (chosen users and roles, each with an optional "can edit"), or Everyone (off until a System Manager allows it in Form Presets Settings; if it is turned off later, existing Everyone presets stay with their owner and System Managers and other users stop seeing them). Presets are also listed under Form Preset in the Prefill app's sidebar.
 
 **Who can do what.**
 
@@ -82,7 +82,7 @@ Nothing is written until you click Apply, and applying only changes the form on 
 | Disable or enable | yes | no | no | no | yes |
 | Delete | yes | no | no | no | yes |
 
-On top of this, a user needs read permission on the target DocType to see or apply a preset, create permission to save one, and write permission to change its values. System Managers see and manage every preset, whatever their access to the target DocType.
+On top of this, a user needs read permission on the target DocType to see or apply a preset (this includes the preset's own owner), create permission to save one, and write permission to change its values. System Managers see, apply, disable and delete every preset without that read check, but they still need create or write on the target DocType to save a preset or change its values.
 
 ## What is never saved or filled
 
@@ -114,7 +114,7 @@ Form Presets Settings (System Manager only):
 
 - Preset values can contain business data. They stay on your site: the app makes no external calls and sends no telemetry.
 - The app does not write values to logs, to the Error Log, or to document version history. Deleting a preset removes its values from the Deleted Document copy as well.
-- Requests the app rejects (bad input, no permission) end as normal validation errors, which Frappe does not copy to the Error Log. If an unexpected server error ever happens, Frappe itself records the request in the Error Log, as it does for any app, so treat the Error Log as sensitive.
+- Requests the app rejects (bad input, no permission) end as normal validation errors, which Frappe does not copy to the Error Log (except on a site running in developer mode, where it logs them too). If an unexpected server error ever happens, Frappe itself records the request in the Error Log, as it does for any app, so treat the Error Log as sensitive.
 - Retention is up to you: delete presets you no longer need, and review who has Everyone or Shared access.
 - Admin checklist: keep Allow Everyone Scope off unless needed; review Excluded DocTypes for DocTypes holding sensitive data; review Form Preset records and their scope before offboarding a user.
 
@@ -141,7 +141,7 @@ semgrep --config ./frappe-semgrep-rules/rules --config r/python.lang.correctness
 
 A browser smoke test of the whole save and apply flow lives in `ui_tests/smoke.py`; its header explains how to run it.
 
-CI: server tests run on every push to `develop`; linters run on every pull request.
+CI: server tests run on every push to `develop` and on every pull request; linters run on every pull request.
 
 ## Support, privacy and terms
 

@@ -2,7 +2,7 @@ import frappe
 from frappe import _
 from frappe.model import child_table_fields, default_fields
 
-# SPEC 3.5. Table is listed because child tables are captured as rows, not as a value.
+# The field types that can be saved and filled. Table is listed because child tables are captured as rows, not as a value.
 ALLOWED_FIELDTYPES = frozenset(
 	{
 		"Data",

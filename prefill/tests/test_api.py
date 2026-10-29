@@ -167,6 +167,34 @@ class TestApi(IntegrationTestCase):
 		doc = frappe.get_doc("Form Preset", name)
 		self.assertEqual((doc.title, doc.description), ("Renamed", "d"))
 
+	def test_update_without_scope_shares_or_description_keeps_them(self):
+		name = self.save(
+			fields={"title": "a"},
+			scope="Shared",
+			shares=[{"share_type": "User", "user": self.shared, "can_edit": 1}],
+			description="Keep me",
+		)
+		with self.set_user(self.owner):
+			api.save_preset(PARENT, "Renamed only", values_of({"title": "b"}), name=name)
+
+		doc = frappe.get_doc("Form Preset", name)
+		self.assertEqual(doc.title, "Renamed only")
+		self.assertEqual(doc.scope, "Shared")
+		self.assertEqual([row.user for row in doc.shares], [self.shared])
+		self.assertEqual(doc.description, "Keep me")
+
+		# an empty description clears it, and a given scope still changes it
+		with self.set_user(self.owner):
+			api.save_preset(PARENT, "Renamed only", values_of({"title": "b"}), name=name, description="")
+			api.save_preset(PARENT, "Renamed only", values_of({"title": "b"}), name=name, scope="Private")
+		doc.reload()
+		self.assertFalse(doc.description)
+		self.assertEqual((doc.scope, len(doc.shares)), ("Private", 0))
+
+	def test_new_preset_is_private_unless_scope_is_given(self):
+		name = self.save(fields={"title": "a"})
+		self.assertEqual(frappe.db.get_value("Form Preset", name, "scope"), "Private")
+
 	def test_failed_saves_leave_no_values_in_logs(self):
 		secret_values = {"secret": MARKER, "locked": MARKER}
 		with self.assertRaises(frappe.ValidationError) as ctx:

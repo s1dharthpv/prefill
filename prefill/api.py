@@ -56,12 +56,16 @@ def save_preset(
 	doctype: str,
 	title: str,
 	values: str | dict,
-	scope: str = "Private",
+	scope: str | None = None,
 	shares: str | list | None = None,
 	description: str | None = None,
 	name: str | None = None,
 ) -> str:
-	"""Create a preset, or update the one called `name`. Returns its name."""
+	"""Create a preset, or update the one called `name`. Returns its name.
+
+	A new preset is Private unless `scope` says otherwise. On an update, `scope`, `shares` and
+	`description` left out mean "unchanged" (pass an empty description to clear it).
+	"""
 	_require_usable(doctype)
 
 	values_json = values if isinstance(values, str) else frappe.as_json(values, indent=None)
@@ -75,7 +79,11 @@ def save_preset(
 		if doc.target_doctype != doctype:
 			frappe.throw(_("A preset cannot move to another DocType"))
 		doc.check_permission("write")
-		doc.update({"title": title, "description": description, "values_json": values_json, "scope": scope})
+		doc.update({"title": title, "values_json": values_json})
+		if description is not None:
+			doc.description = description
+		if scope is not None:
+			doc.scope = scope
 		if shares is not None:
 			doc.set("shares", shares)
 		doc.save()
@@ -86,7 +94,7 @@ def save_preset(
 				"title": title,
 				"target_doctype": doctype,
 				"description": description,
-				"scope": scope,
+				"scope": scope or "Private",
 				"shares": shares or [],
 				"values_json": values_json,
 			}

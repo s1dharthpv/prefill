@@ -19,7 +19,7 @@ Nowhere outside your site. The app makes no external requests, sends no telemetr
 
 ## Logs and history
 
-The app does not write preset values to the Error Log, to document version history, or to other logs. Requests the app rejects end as normal validation errors, which Frappe does not copy to the Error Log. If an unexpected server error ever happens, Frappe itself records the request in the Error Log, as it does for any app, so treat the Error Log as sensitive. When a preset is deleted, its values are removed from the Deleted Document copy that Frappe keeps.
+The app does not write preset values to the Error Log, to document version history, or to other logs. Requests the app rejects end as normal validation errors, which Frappe does not copy to the Error Log (except on a site running in developer mode, where it logs them too). If an unexpected server error ever happens, Frappe itself records the request in the Error Log, as it does for any app, so treat the Error Log as sensitive. When a preset is deleted, its values are removed from the Deleted Document copy that Frappe keeps.
 
 ## Retention and deletion
 
