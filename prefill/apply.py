@@ -160,10 +160,19 @@ def _reference_problem(df, value, known: dict, trusted: bool) -> str | None:
 			return _("Choose the linked type first")
 		if not frappe.db.exists("DocType", linked) or not frappe.db.exists(linked, value):
 			return _("The linked record no longer exists")
-		if not trusted and not frappe.has_permission(linked, "read", doc=value):
+		if not trusted and not _can_read(linked, value):
 			return _("You cannot read the linked record")
 
 	return None
+
+
+def _can_read(linked: str, value) -> bool:
+	"""May the user read what a Link points at? A Link to DocType names a DocType, and what matters is
+	whether the user can read documents of that DocType (a Payment Entry party type, for example),
+	not whether they can read the DocType definition itself, which ordinary users cannot."""
+	if linked == "DocType":
+		return bool(frappe.has_permission(value, "read"))
+	return bool(frappe.has_permission(linked, "read", doc=value))
 
 
 def coerce(df, value):

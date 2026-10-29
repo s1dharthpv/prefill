@@ -306,7 +306,6 @@ class TestApi(IntegrationTestCase):
 		self.assertEqual(len(result["warnings"]), 1)
 
 	def test_dynamic_link_follows_the_link_that_names_its_doctype(self):
-		# only users who can read DocType records may fill a Link to DocType, so this runs as a System Manager
 		preset = self.save(owner=self.sysmgr, fields={"ref_type": PARENT, "ref_name": self.existing.name})
 		result = self.preview(preset, user=self.sysmgr)
 		self.assertEqual(self.change(result, "ref_name")["action"], "set")
@@ -320,14 +319,27 @@ class TestApi(IntegrationTestCase):
 			self.change(self.preview(preset, with_type, user=self.sysmgr), "ref_name")["action"], "set"
 		)
 
-		# a plain user cannot read the DocType record, so the Link to DocType is skipped, and so is what depends on it
-		frappe.db.set_value("Form Preset", preset, "scope", "Everyone")
-		with self.change_settings("Form Presets Settings", allow_everyone_scope=1):
-			full = values_of({"ref_type": PARENT, "ref_name": self.existing.name})
-			frappe.db.set_value("Form Preset", preset, "values_json", full)
-			result = self.preview(preset, user=self.owner)
-			self.assertEqual(self.change(result, "ref_type")["action"], "skip")
-			self.assertEqual(self.change(result, "ref_name")["action"], "skip")
+	def test_link_to_doctype_needs_read_on_that_doctypes_documents(self):
+		# An ordinary user cannot read DocType definitions, but may read Prefill Test Doc documents,
+		# so a Link to DocType naming it is allowed, and so is the Dynamic Link that depends on it.
+		frappe.db.set_value("Form Presets Settings", None, "allow_everyone_scope", 1)
+		self.addCleanup(frappe.db.set_value, "Form Presets Settings", None, "allow_everyone_scope", 0)
+		frappe.clear_cache(doctype="Form Presets Settings")
+
+		readable = self.save(owner=self.sysmgr, fields={"ref_type": PARENT, "ref_name": self.existing.name})
+		frappe.db.set_value("Form Preset", readable, "scope", "Everyone")
+		result = self.preview(readable, user=self.owner)
+		self.assertEqual(self.change(result, "ref_type")["action"], "set")
+		self.assertEqual(self.change(result, "ref_name")["action"], "set")
+
+		# Error Log is readable by System Manager only: the type is skipped, and so is what depends on it
+		unreadable = self.save(
+			owner=self.sysmgr, fields={"ref_type": "Error Log", "ref_name": self.error_log.name}
+		)
+		frappe.db.set_value("Form Preset", unreadable, "scope", "Everyone")
+		result = self.preview(unreadable, user=self.owner)
+		self.assertEqual(self.change(result, "ref_type")["action"], "skip")
+		self.assertEqual(self.change(result, "ref_name")["action"], "skip")
 
 	def test_field_changes_since_saving_are_skipped(self):
 		preset = self.save(fields={"title": "a"})
