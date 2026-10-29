@@ -1,8 +1,36 @@
+<img src="docs/images/logo.png" alt="Prefill logo" width="96" align="right">
+
 # Prefill
 
 Save the values of a form as a preset, then fill a new form with it in one click. A preview shows exactly what will change before anything is filled.
 
 Example: you create the same customer's invoice every week. Fill it once, choose Menu > Save as Preset, and next week choose Presets > Apply a Preset on the new invoice.
+
+## Screenshots
+
+**Save a preset.** Fill a form, choose Menu > Save as Preset, and tick the fields and child tables to keep.
+
+![The Save as Preset dialog with a title, scope, and checklists of fields and child tables](docs/images/save-as-preset.png)
+
+**Make a value dynamic.** Instead of a fixed date, the order date is always today and the due date is always 7 days later.
+
+![The Dynamic values grid with Order Date set to Today and Due Date set to Today plus 7 days](docs/images/dynamic-values.png)
+
+**Preview before anything changes.** On a new form, Presets > Apply a Preset opens a preview. The Priority already typed is kept, and empty fields and the child rows are ready to fill.
+
+![The preview dialog in fill-empty mode, with one row skipped as "Already has a value"](docs/images/preview-fill-empty.png)
+
+**Overwrite when you want to.** The same preview in overwrite mode also replaces the typed Priority. Untick any row you do not want.
+
+![The preview dialog in overwrite mode, with every row ticked](docs/images/preview-overwrite.png)
+
+**The form is filled, not saved.** Review it and save as usual, so every normal validation still runs.
+
+![The form after applying a preset, marked Not Saved](docs/images/applied-form.png)
+
+**Settings.** A System Manager controls the master switch, Everyone sharing, limits and excluded DocTypes.
+
+![The Form Presets Settings page](docs/images/settings.png)
 
 ## Requirements
 
