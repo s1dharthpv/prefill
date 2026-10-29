@@ -5,7 +5,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint
 
-from prefill import values
+from prefill import fields, values
 from prefill.exclusions import get_settings, is_excluded
 from prefill.permissions import is_system_manager
 
@@ -17,9 +17,9 @@ class FormPreset(Document):
 		self.validate_shares()
 		self.validate_owner_only_changes()
 		self.validate_title()
+		self.validate_target_permission()
 		self.validate_values()
 		self.validate_user_cap()
-		self.validate_target_permission()
 
 	def after_delete(self):
 		# Frappe copies the whole document into Deleted Document right after this hook,
@@ -96,6 +96,9 @@ class FormPreset(Document):
 			)
 
 		parsed = values.parse(self.values_json)
+		if self.is_new() or self.has_value_changed("values_json"):
+			fields.validate_values(self.target_doctype, parsed)
+
 		self.values_json = json.dumps(parsed, separators=(",", ":"), ensure_ascii=False)
 		self.field_count = values.count_entries(parsed)
 

@@ -50,6 +50,26 @@ Differences from the SPEC, and decisions the SPEC left open:
 Tests: 32 pass on the dev site (permission matrix for owner, shared user, shared editor, role share, Everyone with the setting on and off, unrelated user, System Manager and Administrator; unreadable target; excluded targets; caps; Deleted Document scrub; values shape; boot flag).
 Gates: ruff check and format clean, pre-commit clean, Semgrep 69 rules 0 findings.
 
+## Step 3: API layer
+
+Built `prefill/api.py` (six whitelisted functions as in SPEC 6), `fields.py` (SPEC 3.5 allowlist, token typing), `tokens.py` (server-side resolution), `apply.py` (the diff). The controller now also validates values against the target DocType, so a direct form or REST save cannot store a field the API would refuse.
+
+Decisions and differences:
+- Field permission uses `Meta.get_permlevel_access` directly, not `get_permitted_fields`. The latter returns column names plus system fields and does not list child tables, so it would still need the allowlist and a second lookup for tables. Capture checks the "read" permlevel, filling checks "write".
+- `preview_apply`, `save_preset`, `record_use` and `delete_preset` are POST only. `preview_apply` is read-only in effect but takes the whole form document, and a GET would put business data in the URL and so in access logs.
+- `record_use` counts with a query-builder update, not `doc.save`, so a shared user without write can still count a use, and `modified` does not move.
+- `save_preset` keeps SPEC's default `scope="Private"`. A can_edit user updating a Shared preset must pass `scope="Shared"` again, otherwise the controller rejects it as a scope change. The Desk UI passes the current scope.
+- The stored document decides draft status: `preview_apply` refuses if the client says docstatus is not 0 or the stored document's docstatus is not 0. A stored draft needs write on it, a new form needs create on the target.
+- Fill rules: `fill_empty` treats None, empty string, and 0 on numeric and Check fields as empty (a new form always carries 0 for those). A value equal to the current one is reported as a skip, not a change. Datetime fields filled by `today` get 00:00:00.
+- Link and Dynamic Link values are skipped if the record is missing or the user cannot read it. Exception: the `me` token (the user's own name). Dynamic Link is checked against the DocType the form will have after applying, so its Link-to-DocType partner is processed first.
+- Consequence to know about: a Link to DocType needs read on that DocType record, which ordinary users do not have, so a Dynamic Link pair keyed on a DocType field is skipped for them. This is the SPEC rule applied as written.
+- Rows in a table with no fillable cell are left out and a warning is returned.
+- Controller order: target-DocType permission is checked before the values, so a user with no access gets a permission error, not a "field cannot be saved" one.
+- `default_company` is only tested with mocks: it needs the Company DocType, which this site does not have (no ERPNext). Saving it on a Link to Company cannot be tested here either; the typing rule (Link with options Company) is in `fields.TOKEN_FITS`.
+- Test DocTypes (`Prefill Test Doc`, `Prefill Test Row`) are created at test time as custom DocTypes and dropped in a class cleanup. DDL commits, so the cleanup rolls back first. They never ship in the app.
+
+Tests: 66 pass. Gates: ruff, pre-commit, Semgrep 69 rules 0 findings (one finding on an ignored `has_permission` result was fixed).
+
 ## Not done yet
 
 - GitHub CI (`ci.yml`, `linter.yml`) has not run: there is no remote. `linter.yml` only triggers on pull requests, so it needs a PR from `develop`. Creating the private remote needs the owner's go-ahead.

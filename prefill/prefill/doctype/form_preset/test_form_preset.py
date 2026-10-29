@@ -4,6 +4,10 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 VALUES = '{"version":1,"fields":{"description":"x","priority":"High"},"tables":{}}'
+VALUES_BY_TARGET = {
+	"Error Log": '{"version":1,"fields":{"seen":1},"tables":{}}',
+	"Note": '{"version":1,"fields":{"title":"x"},"tables":{}}',
+}
 MARKER = "PREFILL-MARKER-7391"
 ROLE = "Accounts User"
 
@@ -40,9 +44,9 @@ class TestFormPreset(IntegrationTestCase):
 			"doctype": "Form Preset",
 			"title": f"Preset {next(_titles)}",
 			"target_doctype": "ToDo",
-			"values_json": VALUES,
 		}
 		data.update(kwargs)
+		data.setdefault("values_json", VALUES_BY_TARGET.get(data["target_doctype"], VALUES))
 		with self.set_user(owner or self.owner):
 			return frappe.get_doc(data).insert()
 
