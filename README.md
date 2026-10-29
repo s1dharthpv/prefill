@@ -43,7 +43,7 @@ Example: you create the same customer's invoice every week. Fill it once, choose
 
 ```bash
 cd $PATH_TO_YOUR_BENCH
-bench get-app $URL_OF_THIS_REPO --branch develop
+bench get-app $URL_OF_THIS_REPO --branch main
 bench --site $YOUR_SITE install-app prefill
 ```
 
@@ -143,7 +143,7 @@ semgrep --config ./frappe-semgrep-rules/rules --config r/python.lang.correctness
 
 A browser smoke test of the whole save and apply flow lives in `ui_tests/smoke.py`; its header explains how to run it.
 
-CI: server tests run on every push to `develop` and on every pull request; linters run on every pull request.
+CI: server tests run on every push to `develop` or `main` and on every pull request; linters run on every pull request.
 
 ## Support, privacy and terms
 
