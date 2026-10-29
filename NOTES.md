@@ -88,9 +88,33 @@ Not built, needs a decision: there is no UI to put a dynamic value (`today`, `me
 
 Gates: ESLint and Prettier pass (the repo `.eslintrc` now declares the `prefill` global), ruff, Semgrep 0 findings, 66 server tests.
 
+## Step 5: smoke test, gates, README
+
+- `ui_tests/smoke.py` (Playwright for Python, run from outside the bench, not part of `bench run-tests`, not a dependency of the app). It saves a preset on a form with a child table, reloads, applies it, checks the diff in fill-empty and in overwrite and replace modes, checks nothing is saved until the form is, saves, checks `use_count`, checks a submitted document and an excluded DocType have no Presets UI, and cleans up. Passes on the dev site. The password comes from `PREFILL_UI_PASSWORD`, never from the file.
+- Cypress would be the Frappe-native choice, but it needs a Node test setup in the bench that this app does not otherwise need. Playwright keeps the app free of test dependencies. Decision for the owner if CI should run UI tests.
+- CI has not run: no remote yet. `ci.yml` pins Frappe `version-16`; `linter.yml` only triggers on pull requests.
+- README written: install, use, permissions, never-saved list, settings, limits, data handling, development. It says `--branch develop` because `main` does not exist yet. Change it when the owner merges to `main`.
+- LICENSE had the template placeholders. Now "Copyright (c) 2026 Sidharth PV" (publisher name from the scaffold). Owner to confirm the holder.
+- Fresh clean v16 bench, from the committed `develop` branch: `bench get-app <path> --branch develop`, `new-site`, `install-app prefill`, `migrate`, `run-tests --app prefill` all pass (66 tests). That is the "fresh bench installs using only the README" check.
+- `grep -ri erpnext` over the repo: 0 matches (the README does not use the word either).
+
+## Step 6: listing material
+
+In `~/Frappe/Presets/listing/` (outside the app repo): `logo.png` and `logo.svg`, five real screenshots, `demo.mp4`, `LISTING.md` (title, summary, long description, category suggestion), `support.md`, `privacy.md`. `make_demo_doctype.py` and `record_demo.py` rebuild the screenshots and video on a dev site.
+
+Open items that only the owner can fill:
+- `{{SUPPORT_EMAIL}}`, `{{ISSUES_URL}}`, `{{RESPONSE_TIME}}` in `support.md`, `{{DATE}}` in `privacy.md`.
+- Category: confirm in the Marketplace dashboard. "Productivity" is a guess.
+- Screenshots and video use a demo "Customer Order" DocType, created on the dev site only.
+- The listing does not mention dynamic values, because the Save dialog cannot create them yet (see step 4).
+
+## Environment note
+
+`playwright install ffmpeg` (run from my scratch environment, Playwright 1.64) pruned Chromium 1243 from `~/.cache/ms-playwright`, which another session's Playwright 1.63 environment uses. Restored by running that environment's own `playwright install chromium chromium-headless-shell`. Do not run `playwright install` again; point scripts at a cached build with `executable_path` instead.
+
 ## Not done yet
 
-- GitHub CI (`ci.yml`, `linter.yml`) has not run: there is no remote. `linter.yml` only triggers on pull requests, so it needs a PR from `develop`. Creating the private remote needs the owner's go-ahead.
+- GitHub CI (`ci.yml`, `linter.yml`) has not run: there is no remote (public pushes, releases and Submit are the owner's). `linter.yml` only triggers on pull requests, so it needs a PR from `develop`. Creating the private remote needs the owner's go-ahead.
 - Fresh-site install from README only (done after the README exists).
 - `bench migrate` on a fresh v16 site and the CI run: not done for step 2 beyond the dev site.
 
