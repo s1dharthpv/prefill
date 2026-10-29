@@ -1,0 +1,145 @@
+{
+ "actions": [],
+ "creation": "2026-10-29 18:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "links": [],
+ "modified": "2026-10-29 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Prefill",
+ "name": "Form Preset",
+ "owner": "Administrator",
+ "states": [],
+ "autoname": "format:FPR-{#####}",
+ "naming_rule": "Expression",
+ "title_field": "title",
+ "search_fields": "title,target_doctype",
+ "track_changes": 0,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "allow_rename": 0,
+ "field_order": [
+  "title",
+  "target_doctype",
+  "description",
+  "scope",
+  "disabled",
+  "column_break_main",
+  "field_count",
+  "use_count",
+  "last_used",
+  "sharing_section",
+  "shares",
+  "values_section",
+  "values_json"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 0,
+   "length": 140
+  },
+  {
+   "fieldname": "target_doctype",
+   "fieldtype": "Link",
+   "label": "Target DocType",
+   "options": "DocType",
+   "reqd": 1,
+   "set_only_once": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "scope",
+   "fieldtype": "Select",
+   "label": "Scope",
+   "options": "Private\nShared\nEveryone",
+   "default": "Private",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "field_count",
+   "fieldtype": "Int",
+   "label": "Field Count",
+   "read_only": 1,
+   "in_list_view": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "use_count",
+   "fieldtype": "Int",
+   "label": "Use Count",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "last_used",
+   "fieldtype": "Datetime",
+   "label": "Last Used",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sharing_section",
+   "fieldtype": "Section Break",
+   "label": "Sharing",
+   "depends_on": "eval:doc.scope=='Shared'"
+  },
+  {
+   "fieldname": "shares",
+   "fieldtype": "Table",
+   "label": "Shared With",
+   "options": "Form Preset Share"
+  },
+  {
+   "fieldname": "values_section",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "values_json",
+   "fieldtype": "Code",
+   "label": "Values",
+   "options": "JSON",
+   "hidden": 1,
+   "no_copy": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Desk User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  }
+ ]
+}

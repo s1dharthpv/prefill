@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "creation": "2026-10-29 18:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "links": [],
+ "modified": "2026-10-29 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Prefill",
+ "name": "Form Presets Settings",
+ "owner": "Administrator",
+ "states": [],
+ "issingle": 1,
+ "track_changes": 0,
+ "field_order": [
+  "enabled",
+  "allow_everyone_scope",
+  "column_break_limits",
+  "max_presets_per_user",
+  "max_values_kb",
+  "exclusions_section",
+  "excluded_doctypes"
+ ],
+ "fields": [
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "description": "Master switch. When off, the Presets buttons are hidden on every form."
+  },
+  {
+   "fieldname": "allow_everyone_scope",
+   "fieldtype": "Check",
+   "label": "Allow Everyone Scope",
+   "default": "0",
+   "description": "When off, presets cannot be shared with everyone and existing Everyone presets are not usable."
+  },
+  {
+   "fieldname": "column_break_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "max_presets_per_user",
+   "fieldtype": "Int",
+   "label": "Max Presets Per User",
+   "default": "200"
+  },
+  {
+   "fieldname": "max_values_kb",
+   "fieldtype": "Int",
+   "label": "Max Values Size (KB)",
+   "default": "64"
+  },
+  {
+   "fieldname": "exclusions_section",
+   "fieldtype": "Section Break",
+   "label": "Excluded DocTypes"
+  },
+  {
+   "fieldname": "excluded_doctypes",
+   "fieldtype": "Table",
+   "label": "Excluded DocTypes",
+   "options": "Form Preset Excluded DocType",
+   "description": "Added to the built-in exclusions (core system DocTypes, Single, child table and virtual DocTypes)."
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1
+  }
+ ]
+}
