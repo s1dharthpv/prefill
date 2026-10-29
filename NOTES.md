@@ -92,7 +92,7 @@ Gates: ESLint and Prettier pass (the repo `.eslintrc` now declares the `prefill`
 
 - `ui_tests/smoke.py` (Playwright for Python, run from outside the bench, not part of `bench run-tests`, not a dependency of the app). It saves a preset on a form with a child table, reloads, applies it, checks the diff in fill-empty and in overwrite and replace modes, checks nothing is saved until the form is, saves, checks `use_count`, checks a submitted document and an excluded DocType have no Presets UI, and cleans up. Passes on the dev site. The password comes from `PREFILL_UI_PASSWORD`, never from the file.
 - Cypress would be the Frappe-native choice, but it needs a Node test setup in the bench that this app does not otherwise need. Playwright keeps the app free of test dependencies. Decision for the owner if CI should run UI tests.
-- CI has not run: no remote yet. `ci.yml` pins Frappe `version-16`; `linter.yml` only triggers on pull requests.
+- CI: see the GitHub CI section below. `ci.yml` pins Frappe `version-16`; `linter.yml` only triggers on pull requests.
 - README written: install, use, permissions, never-saved list, settings, limits, data handling, development. It says `--branch develop` because `main` does not exist yet. Change it when the owner merges to `main`.
 - LICENSE had the template placeholders. Now "Copyright (c) 2026 Sidharth PV" (publisher name from the scaffold). Owner to confirm the holder.
 - Fresh clean v16 bench, from the committed `develop` branch: `bench get-app <path> --branch develop`, `new-site`, `install-app prefill`, `migrate`, `run-tests --app prefill` all pass (66 tests). That is the "fresh bench installs using only the README" check.
@@ -134,9 +134,17 @@ A read-only reviewer re-derived the privacy, listing and packaging claims from t
 
 Still true and worth knowing: System Managers bypass the target-DocType read check, and `record_use` deliberately skips write permission.
 
+## GitHub CI (2026-10-29)
+
+Private repo `s1dharthpv/prefill`. `develop` is pushed. `main` was created from the untouched scaffold commit (`153cd28`) only so a pull request could exist: no work has been pushed to `main`, and the draft PR #1 (develop into main) is not for merge.
+- Linters (`linter.yml`, on the PR): Frappe Linter passed (pre-commit with ruff, ESLint and Prettier, and the Frappe Semgrep rules with 0 findings) and the Vulnerable Dependency Check passed (no known vulnerabilities).
+- CI (`ci.yml`): passed on the push to `develop` and on the PR. Fresh runner, `bench init --frappe-branch version-16`, install, then 69 tests OK.
+- The default branch is `develop` (the first branch pushed). Set it to `main` when `main` carries the release.
+- Before the repo goes public: this file (`NOTES.md`) holds local paths and working notes. Trim or remove it, and check the commit history, first.
+
 ## Not done yet
 
-- GitHub CI (`ci.yml`, `linter.yml`) has not run: there is no remote (public pushes, releases and Submit are the owner's). `linter.yml` only triggers on pull requests, so it needs a PR from `develop`. Creating the private remote needs the owner's go-ahead.
+- Public pushes, a public repo, releases and Submit are the owner's steps. Today the repo is private.
 - Fresh-site install from README only (done after the README exists).
 - `bench migrate` on a fresh v16 site and the CI run: not done for step 2 beyond the dev site.
 
