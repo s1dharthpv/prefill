@@ -7,7 +7,7 @@ Example: you create the same customer's invoice every week. Fill it once, choose
 ## Requirements
 
 - Frappe v16 (Python 3.14)
-- No other app. Prefill works on any DocType, including your own.
+- No other app. Prefill works on standard DocTypes, including your own. A few kinds are left out (see below).
 
 ## Installation
 
@@ -30,7 +30,7 @@ bench --site $YOUR_SITE install-app prefill
 
 Nothing is written until you click Apply, and applying only changes the form on screen. You then save the form as usual, so every normal validation runs.
 
-**Scope.** Private (only you), Shared (chosen users and roles, each with an optional "can edit"), or Everyone (off until a System Manager allows it in Form Presets Settings). Presets are also listed under Form Preset in the Prefill workspace.
+**Scope.** Private (only you), Shared (chosen users and roles, each with an optional "can edit"), or Everyone (off until a System Manager allows it in Form Presets Settings; if it is turned off later, existing Everyone presets stay with their owner and System Managers and other users stop seeing them). Presets are also listed under Form Preset in the Prefill workspace.
 
 **Who can do what.**
 
@@ -39,9 +39,10 @@ Nothing is written until you click Apply, and applying only changes the form on 
 | See and apply | yes | yes | yes | yes | yes |
 | Edit title, description, values | yes | no | yes | no | yes |
 | Change scope or sharing | yes | no | no | no | yes |
+| Disable or enable | yes | no | no | no | yes |
 | Delete | yes | no | no | no | yes |
 
-On top of this, a user needs read permission on the target DocType to see or apply a preset, create permission to save one, and write permission to change its values.
+On top of this, a user needs read permission on the target DocType to see or apply a preset, create permission to save one, and write permission to change its values. System Managers see and manage every preset, whatever their access to the target DocType.
 
 ## What is never saved or filled
 
@@ -72,7 +73,8 @@ Form Presets Settings (System Manager only):
 ## Data handling
 
 - Preset values can contain business data. They stay on your site: the app makes no external calls and sends no telemetry.
-- Values are not written to logs, to the Error Log, or to document version history. Deleting a preset removes its values from the Deleted Document copy as well.
+- The app does not write values to logs, to the Error Log, or to document version history. Deleting a preset removes its values from the Deleted Document copy as well.
+- Requests the app rejects (bad input, no permission) end as normal validation errors, which Frappe does not copy to the Error Log. If an unexpected server error ever happens, Frappe itself records the request in the Error Log, as it does for any app, so treat the Error Log as sensitive.
 - Retention is up to you: delete presets you no longer need, and review who has Everyone or Shared access.
 - Admin checklist: keep Allow Everyone Scope off unless needed; review Excluded DocTypes for DocTypes holding sensitive data; review Form Preset records and their scope before offboarding a user.
 

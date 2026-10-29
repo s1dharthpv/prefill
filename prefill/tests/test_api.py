@@ -435,6 +435,55 @@ class TestApi(IntegrationTestCase):
 			api.delete_preset(preset)
 		self.assertFalse(frappe.db.exists("Form Preset", preset))
 
+	# malformed input
+
+	def test_malformed_arguments_are_validation_errors(self):
+		preset = self.save(fields={"title": "a"})
+		deep = "[" * 50000
+		bad = {
+			"shares not json": lambda: api.save_preset(
+				PARENT, "x", values_of({"title": "a"}), shares="{oops"
+			),
+			"shares too deep": lambda: api.save_preset(PARENT, "x", values_of({"title": "a"}), shares=deep),
+			"shares a number": lambda: api.save_preset(PARENT, "x", values_of({"title": "a"}), shares=5),
+			"shares rows not objects": lambda: api.save_preset(
+				PARENT, "x", values_of({"title": "a"}), shares=[1]
+			),
+			"values not an object": lambda: api.save_preset(PARENT, "x", "[1]"),
+			"values too deep": lambda: api.save_preset(PARENT, "x", deep),
+			"doc not json": lambda: api.preview_apply(preset, "{oops"),
+			"doc too deep": lambda: api.preview_apply(preset, deep),
+			"doc a list": lambda: api.preview_apply(preset, [1]),
+			"preset a list": lambda: api.preview_apply([preset], doc_json()),
+		}
+		# A wrong argument type is stopped by Frappe's own type check (FrappeTypeError). Both it and
+		# ValidationError answer HTTP 417, and Frappe only copies the request into the Error Log for 500 and up.
+		refusals = (frappe.ValidationError, frappe.exceptions.FrappeTypeError)
+		with self.set_user(self.owner):
+			for label, call in bad.items():
+				with self.subTest(label), self.assertRaises(refusals) as ctx:
+					call()
+				self.assertLess(ctx.exception.http_status_code, 500)
+
+	def test_odd_values_in_the_posted_form_do_not_crash_the_preview(self):
+		preset = self.save(fields={"title": "a", "qty": 3}, tables={"items": [{"item_code": "A"}]})
+		odd = {
+			"table is a number": {"items": 5},
+			"table is text": {"items": "x"},
+			"table is an object": {"items": {"a": 1}},
+			"field is a list": {"title": [1], "qty": [2]},
+			"field is an object": {"title": {"a": 1}, "qty": {"a": 1}},
+			"name is a list": {"name": ["x"]},
+			"docstatus is a list": {"docstatus": [1]},
+		}
+		for label, extra in odd.items():
+			with self.subTest(label):
+				try:
+					result = self.preview(preset, doc_json(**extra))
+				except frappe.ValidationError:
+					continue  # a clean refusal is fine
+				self.assertIn("changes", result)
+
 	# transport
 
 	def test_writes_and_diffs_are_post_only(self):

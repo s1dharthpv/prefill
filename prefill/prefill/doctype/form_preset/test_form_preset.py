@@ -124,6 +124,21 @@ class TestFormPreset(IntegrationTestCase):
 			},
 		)
 
+	def test_owner_can_still_edit_an_everyone_preset_after_the_setting_is_turned_off(self):
+		with self.change_settings("Form Presets Settings", allow_everyone_scope=1):
+			preset = self.make_preset(scope="Everyone")
+
+		with self.set_user(self.owner):
+			doc = frappe.get_doc("Form Preset", preset.name)
+			doc.title = "Renamed while Everyone is off"
+			doc.save()
+
+			# but choosing Everyone again is still refused
+			private = self.make_preset()
+			private.scope = "Everyone"
+			with self.assertRaises(frappe.ValidationError):
+				private.save()
+
 	def test_everyone_scope_rejected_when_setting_off(self):
 		with self.assertRaises(frappe.ValidationError):
 			self.make_preset(scope="Everyone")

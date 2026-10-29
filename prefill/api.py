@@ -66,7 +66,9 @@ def save_preset(
 
 	values_json = values if isinstance(values, str) else frappe.as_json(values, indent=None)
 	if isinstance(shares, str):
-		shares = frappe.parse_json(shares) if shares.strip() else []
+		shares = _parse_json(shares, _("Shares")) if shares.strip() else []
+	if shares is not None and not (isinstance(shares, list) and all(isinstance(row, dict) for row in shares)):
+		frappe.throw(_("Shares must be a list of rows"))
 
 	if name:
 		doc = frappe.get_doc("Form Preset", name)
@@ -102,6 +104,8 @@ def preview_apply(preset: str, doc: str | dict, mode: str = "fill_empty", table_
 	_require_enabled()
 	if mode not in MODES or table_mode not in TABLE_MODES:
 		frappe.throw(_("Unknown mode"))
+	if not isinstance(preset, str):
+		frappe.throw(_("Choose a preset"))
 
 	preset_doc = frappe.get_doc("Form Preset", preset)
 	preset_doc.check_permission("read")
@@ -111,7 +115,7 @@ def preview_apply(preset: str, doc: str | dict, mode: str = "fill_empty", table_
 	target = preset_doc.target_doctype
 	_require_usable(target)
 
-	doc = frappe.parse_json(doc) if isinstance(doc, str) else doc
+	doc = _parse_json(doc, _("The form")) if isinstance(doc, str) else doc
 	if not isinstance(doc, dict) or doc.get("doctype") != target:
 		frappe.throw(_("This preset is for {0}").format(frappe.bold(target)))
 
@@ -141,6 +145,15 @@ def delete_preset(name: str):
 	frappe.delete_doc("Form Preset", name)
 
 
+def _parse_json(raw: str, label: str):
+	"""Bad client input must end as a validation error. An unexpected exception would make Frappe
+	copy the whole request, values included, into the Error Log."""
+	try:
+		return frappe.parse_json(raw)
+	except ValueError, RecursionError:
+		frappe.throw(_("{0} is not valid JSON").format(label))
+
+
 def _describe(df) -> dict:
 	return {"fieldname": df.fieldname, "label": df.label or df.fieldname, "fieldtype": df.fieldtype}
 
@@ -165,6 +178,7 @@ def _require_usable(doctype: str):
 def _require_draft(target: str, doc: dict):
 	"""A preset only fills new or draft documents. The stored document decides, not the client."""
 	name = doc.get("name")
+	name = name if isinstance(name, str) else None
 	stored = bool(name) and frappe.db.exists(target, name)
 
 	if cint(doc.get("docstatus")) != 0 or (stored and frappe.db.get_value(target, name, "docstatus") != 0):

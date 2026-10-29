@@ -22,13 +22,14 @@ def build_preview(preset, doc: dict, mode: str, table_mode: str) -> dict:
 	tables = []
 
 	for fieldname, rows in values["tables"].items():
+		rows_now = doc.get(fieldname)
 		entry = {
 			"fieldname": fieldname,
 			"label": fieldname,
 			"mode": table_mode,
 			"action": "set",
 			"reason": None,
-			"current_rows": len(doc.get(fieldname) or []),
+			"current_rows": len(rows_now) if isinstance(rows_now, list) else 0,
 			"rows": [],
 		}
 		tables.append(entry)

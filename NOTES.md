@@ -96,7 +96,7 @@ Gates: ESLint and Prettier pass (the repo `.eslintrc` now declares the `prefill`
 - README written: install, use, permissions, never-saved list, settings, limits, data handling, development. It says `--branch develop` because `main` does not exist yet. Change it when the owner merges to `main`.
 - LICENSE had the template placeholders. Now "Copyright (c) 2026 Sidharth PV" (publisher name from the scaffold). Owner to confirm the holder.
 - Fresh clean v16 bench, from the committed `develop` branch: `bench get-app <path> --branch develop`, `new-site`, `install-app prefill`, `migrate`, `run-tests --app prefill` all pass (66 tests). That is the "fresh bench installs using only the README" check.
-- `grep -ri erpnext` over the repo: 0 matches (the README does not use the word either).
+- The assignment's grep check for the ERP product name (see its done list) returns 0 matches over all tracked files, README included.
 
 ## Step 6: listing material
 
@@ -111,6 +111,17 @@ Open items that only the owner can fill:
 ## Environment note
 
 `playwright install ffmpeg` (run from my scratch environment, Playwright 1.64) pruned Chromium 1243 from `~/.cache/ms-playwright`, which another session's Playwright 1.63 environment uses. Restored by running that environment's own `playwright install chromium chromium-headless-shell`. Do not run `playwright install` again; point scripts at a cached build with `executable_path` instead.
+
+## Independent review (2026-10-29) and fixes
+
+A read-only reviewer re-derived the privacy, listing and packaging claims from the source. Confirmed: no network calls or telemetry, the Deleted Document scrub, server-side draft check, the field allowlist, the permission table, packaging rules. Found and fixed:
+- The assignment's grep check matched this file. Reworded.
+- Owner of an existing Everyone preset could not save any edit while the Everyone setting was off, because `validate_scope` threw on every save. It now only refuses when Everyone is being chosen. Test added.
+- Frappe copies the whole request into the Error Log on an unexpected server error (HTTP 500 or more). Malformed input now ends as a validation error: bad JSON, too-deep JSON, wrong shapes for `shares`, `doc` and `preset`, a posted child table that is not a list, a non-text name. Wrong argument types are stopped by Frappe's own type check, which answers 417 and is not logged. Tests added for each.
+- README, privacy page and listing text overstated: "any DocType", "only people who can read the DocType" (System Managers see every preset), child rows in the preview, and "never in the Error Log" (now says what is and is not guaranteed). Corrected. README table gained a Disable row.
+- Removed commented template hook blocks (`doc_events`, `override_whitelisted_methods`) and the v14 docs link in `patches.txt`, so a text-based audit cannot trip on them.
+
+Still true and worth knowing: System Managers bypass the target-DocType read check, and `record_use` deliberately skips write permission.
 
 ## Not done yet
 

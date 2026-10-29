@@ -34,7 +34,10 @@ class FormPreset(Document):
 			frappe.throw(_("Presets cannot be used on {0}").format(frappe.bold(self.target_doctype)))
 
 	def validate_scope(self):
-		if self.scope == "Everyone" and not get_settings().allow_everyone_scope:
+		# Only refuse when Everyone is being chosen. An existing Everyone preset stays editable
+		# by its owner while the setting is off, it just is not usable by anyone else.
+		chosen = self.is_new() or self.has_value_changed("scope")
+		if self.scope == "Everyone" and chosen and not get_settings().allow_everyone_scope:
 			frappe.throw(_("Sharing with everyone is turned off in Form Presets Settings"))
 
 	def validate_shares(self):
