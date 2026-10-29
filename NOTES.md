@@ -70,6 +70,24 @@ Decisions and differences:
 
 Tests: 66 pass. Gates: ruff, pre-commit, Semgrep 69 rules 0 findings (one finding on an ignored `has_permission` result was fixed).
 
+## Step 4: Desk UI
+
+`prefill/public/js/prefill.js`, included with `app_include_js`. Plain Desk JS, no build step. Boot flag now also carries `allow_everyone` (SPEC 7 lists `enabled` and `excluded` only) so the Save dialog can hide the Everyone option when the setting is off instead of failing on save.
+
+Checked by hand in a real browser (Playwright, dev site, test DocType with a child table):
+- `form-refresh` handler, `page.add_menu_item` ("Save as Preset") and `frm.add_custom_button` with the group "Presets" all render in v16. This closes the three step 1 items that were only verified at source level.
+- Save dialog: title, description, scope, sharing table, field and child-table checklists. Pre-ticked = fields with a value; a 0 on a number or Check is a default, not a value.
+- Apply: presets are loaded on click only, diff dialog with a checkbox per row, "fill empty only / overwrite" and "append / replace rows" re-run the server diff, skipped rows are greyed with the reason, nothing is written until Apply, applying leaves the form dirty and the normal save runs validations. `record_use` incremented `use_count`.
+- No Presets button on a submitted document, and none on User (excluded) or on a Single DocType. "Save as Preset" is still offered on a submitted document (capturing from it is harmless).
+
+Bugs the browser found that the server tests could not:
+- Pre-tick offered an unchecked Check as "filled" (the client numeric list does not include Check).
+- Select controls fire `change` during dialog construction with no value, which sent an empty mode and the server answered "Unknown mode". Changes are now ignored until the first diff has loaded.
+
+Not built, needs a decision: there is no UI to put a dynamic value (`today`, `me`, ...) into a preset. The server stores, types and resolves them (steps 2 and 3, tested), but a user can only create one through the API. Options: a small "Make dynamic" choice next to eligible fields in the Save dialog, or leave it API-only for v0.1.
+
+Gates: ESLint and Prettier pass (the repo `.eslintrc` now declares the `prefill` global), ruff, Semgrep 0 findings, 66 server tests.
+
 ## Not done yet
 
 - GitHub CI (`ci.yml`, `linter.yml`) has not run: there is no remote. `linter.yml` only triggers on pull requests, so it needs a PR from `develop`. Creating the private remote needs the owner's go-ahead.

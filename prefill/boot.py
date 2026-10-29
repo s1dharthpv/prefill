@@ -8,5 +8,6 @@ def boot_session(bootinfo):
 	settings = get_settings()
 	bootinfo.form_presets = {
 		"enabled": cint(settings.enabled),
+		"allow_everyone": cint(settings.allow_everyone_scope),
 		"excluded": sorted(get_excluded_doctypes()),
 	}

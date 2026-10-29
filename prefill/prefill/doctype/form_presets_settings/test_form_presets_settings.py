@@ -54,6 +54,7 @@ class TestFormPresetsSettings(IntegrationTestCase):
 		info = frappe._dict()
 		boot_session(info)
 		self.assertEqual(info.form_presets["enabled"], 1)
+		self.assertEqual(info.form_presets["allow_everyone"], 0)
 		for name in ("User", "Role", "Form Preset", "DocType"):
 			self.assertIn(name, info.form_presets["excluded"])
 
