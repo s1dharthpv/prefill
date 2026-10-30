@@ -9,6 +9,10 @@ from prefill.fields import field_problem, has_level, permitted_levels
 
 NUMERIC_FIELDTYPES = ("Int", "Float", "Currency", "Percent", "Check")
 
+# A named tuple, not `except A, B, C:`. That unparenthesised form is valid Python 3.14, but Frappe's
+# Semgrep cannot parse it, and the formatter rewrites a parenthesised tuple into it.
+COERCE_ERRORS = (ValueError, TypeError, frappe.ValidationError)
+
 
 def build_preview(preset, doc: dict, mode: str, table_mode: str) -> dict:
 	"""Work out what applying `preset` to `doc` would change. Reads only, never writes the document."""
@@ -142,7 +146,7 @@ def _prepare(df, raw, known: dict) -> tuple[str | int | float | None, str | None
 
 	try:
 		value = coerce(df, value)
-	except ValueError, TypeError, frappe.ValidationError:
+	except COERCE_ERRORS:
 		return None, _("The saved value does not fit this field")
 
 	return value, _reference_problem(df, value, known, trusted)

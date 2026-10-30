@@ -10,6 +10,9 @@ from prefill.exclusions import get_settings, is_excluded
 MODES = ("fill_empty", "overwrite")
 TABLE_MODES = ("append", "replace")
 
+# A named tuple, not `except A, B:` (see COERCE_ERRORS in apply.py for why).
+JSON_ERRORS = (ValueError, RecursionError)
+
 
 @frappe.whitelist()
 def get_capturable_fields(doctype: str) -> dict:
@@ -158,7 +161,7 @@ def _parse_json(raw: str, label: str):
 	copy the whole request, values included, into the Error Log."""
 	try:
 		return frappe.parse_json(raw)
-	except ValueError, RecursionError:
+	except JSON_ERRORS:
 		frappe.throw(_("{0} is not valid JSON").format(label))
 
 
