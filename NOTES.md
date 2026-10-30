@@ -77,6 +77,7 @@ Frappe v16 only. The app uses no `override_doctype_class`, no `override_whitelis
 - Server tests: 69, run with `bench --site <site> run-tests --app prefill`. They cover the permission matrix, the allowlist, token typing, caps, exclusions, the preview in each mode, malformed input, the Deleted Document scrub and the boot flag.
 - Test DocTypes (`Prefill Test Doc`, `Prefill Test Row`) are created as custom DocTypes at test time and dropped afterwards. Creating them commits, so the cleanup rolls back first. They never ship in the app.
 - The default company value is only tested with mocks, because it needs a Company DocType that a bare Frappe site does not have.
+- Catch several exception types with a named tuple (`except COERCE_ERRORS:`), not `except A, B:`. The formatter, set to Python 3.14, rewrites a parenthesised tuple into the unparenthesised form, which is valid but which Frappe's Semgrep cannot parse, so it skips that part of the file. Check with `semgrep ... --json`: both `results` and `errors` should be empty.
 - `ui_tests/smoke.py` drives the real flow in a browser: save a preset with a child table, apply it, check the preview in each mode, save, and check that a submitted document gets no Apply button and an excluded DocType gets no Presets UI. Its header explains how to run it.
 - CI runs the server tests on pushes to `develop` or `main` and on pull requests, and the linters (pre-commit, the Frappe Semgrep rules, pip-audit) on pull requests.
 - `pyproject.toml` requires Python `>=3.14`, which is what Frappe v16 requires.

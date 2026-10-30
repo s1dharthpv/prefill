@@ -6,6 +6,10 @@ from frappe import _
 VERSION = 1
 MAX_DAYS_OFFSET = 3650
 
+# A named tuple, not `except A, B:` (see COERCE_ERRORS in apply.py for why).
+# RecursionError is what the json module raises for deeply nested input.
+PARSE_ERRORS = (ValueError, RecursionError)
+
 # token -> whether it takes a `days` offset
 TOKENS = {
 	"today": True,
@@ -30,7 +34,7 @@ def parse(raw: str | None) -> dict:
 	"""Parse and shape-check `values_json`. Field level checks against the target DocType live elsewhere."""
 	try:
 		values = json.loads(raw or "")
-	except ValueError, RecursionError:
+	except PARSE_ERRORS:
 		frappe.throw(_("Preset values are not valid JSON"))
 
 	if not isinstance(values, dict) or set(values) - {"version", "fields", "tables"}:
