@@ -98,6 +98,11 @@ class FormPreset(Document):
 				_("Preset values are larger than the {0} KB limit").format(get_settings().max_values_kb)
 			)
 
+		if not (self.values_json or "").strip():
+			frappe.throw(
+				_("A preset is created from a form. Fill the form, then choose Menu > Save as Preset")
+			)
+
 		parsed = values.parse(self.values_json)
 		if self.is_new() or self.has_value_changed("values_json"):
 			fields.validate_values(self.target_doctype, parsed)

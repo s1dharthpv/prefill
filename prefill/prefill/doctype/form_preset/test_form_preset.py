@@ -235,6 +235,12 @@ class TestFormPreset(IntegrationTestCase):
 
 		self.make_preset(values_json=big)  # fine under the default cap
 
+	def test_preset_without_values_points_to_save_as_preset(self):
+		for empty in ("", "   ", None):
+			with self.subTest(values_json=empty), self.assertRaises(frappe.ValidationError) as ctx:
+				self.make_preset(values_json=empty)
+			self.assertIn("Save as Preset", str(ctx.exception))
+
 	def test_excluded_targets(self):
 		for target in ("User", "Form Preset", "System Settings", "Has Role", "DocType"):
 			with self.subTest(target=target), self.assertRaises(frappe.ValidationError):

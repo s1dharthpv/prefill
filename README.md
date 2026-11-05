@@ -72,7 +72,7 @@ Dynamic values work on the fields of the form itself, not on child table rows.
 
 Nothing is written until you click Apply, and applying only changes the form on screen. You then save the form as usual, so every normal validation runs.
 
-**Scope.** Private (only you), Shared (chosen users and roles, each with an optional "can edit"), or Everyone (off until a System Manager allows it in Form Presets Settings; if it is turned off later, existing Everyone presets stay with their owner and System Managers and other users stop seeing them). Presets are also listed under Form Preset in the Prefill app's sidebar.
+**Scope.** Private (only you), Shared (chosen users and roles, each with an optional "can edit"), or Everyone (off until a System Manager allows it in Form Presets Settings; if it is turned off later, existing Everyone presets stay with their owner and System Managers and other users stop seeing them). Presets are also listed under Form Preset in the Prefill app's sidebar. That list has no Add button: a preset is only created from Menu > Save as Preset, because its values come from a filled form.
 
 **Who can do what.**
 

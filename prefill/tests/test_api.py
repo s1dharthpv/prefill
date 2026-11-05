@@ -448,6 +448,13 @@ class TestApi(IntegrationTestCase):
 		result = self.preview(preset, json.dumps(doc_json()))
 		self.assertEqual(self.change(result, "title")["action"], "set")
 
+	# presets are created from the form menu only
+
+	def test_form_preset_has_no_add_button_but_save_preset_still_creates(self):
+		self.assertTrue(frappe.get_meta("Form Preset").in_create)
+		preset = self.save(fields={"title": "a"})
+		self.assertTrue(frappe.db.exists("Form Preset", preset))
+
 	# record_use, delete_preset
 
 	def test_record_use_counts_for_anyone_who_may_use_the_preset(self):
