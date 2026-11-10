@@ -1,0 +1,30 @@
+name: Bug report
+description: Something in Prefill does not work as described
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Frappe and Prefill version
+      description: Output of `bench version`
+    validations:
+      required: true
+  - type: input
+    id: doctype
+    attributes:
+      label: DocType you were using
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected and what happened instead
+      description: Include the error message if there was one. Please do not paste real customer or financial data.
+    validations:
+      required: true
